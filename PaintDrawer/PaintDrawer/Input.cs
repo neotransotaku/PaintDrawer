@@ -20,6 +20,13 @@ namespace PaintDrawer
         public static extern void mouse_event(uint dwFlags, uint dx, uint dy, uint cButtons, uint dwExtraInfo);
         [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
         public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern IntPtr SendMessage(IntPtr hWnd, UInt32 Msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+        public static extern short GetKeyState(int nVirtKey);
+
         // Mouse actions
         private const int MOUSEEVENTF_LEFTDOWN = 0x02;
         private const int MOUSEEVENTF_LEFTUP = 0x04;
@@ -34,6 +41,30 @@ namespace PaintDrawer
         public const byte KEY_ENTER = 0x0D;
         public const byte KEY_SHIFT = 0x10;
         public const byte KEY_CONTROL = 0x11;
+        public const byte KEY_CAPITAL = 0x14;
+        public const byte KEY_ALT = 0x12;
+        public const byte KEY_TAB = 0x09;
+        public const byte KEY_SPACE = 0x20;
+        public const byte KEY_END = 0x23;
+        public const byte KEY_HOME = 0x24;
+        public const byte KEY_DOWN = 0x28;
+        public const byte KEY_0 = 0x30;
+        public const byte KEY_9 = 0x39;
+        public const byte KEY_A = 0x41;
+        public const byte KEY_B = 0x42;
+        public const byte KEY_C = 0x43;
+        public const byte KEY_D = 0x44;
+        public const byte KEY_E = 0x45;
+        public const byte KEY_I = 0x49;
+        public const byte KEY_O = 0x4F;
+        public const byte KEY_S = 0x53;
+        public const byte KEY_DIVIDE = 0x6F;
+        public const byte KEY_SEMICOLON = 0xBA;
+        public const byte KEY_MINUS = 0xBD;
+        public const byte KEY_PERIOD = 0xBE;
+        public const byte KEY_LBRACKET = 0xDB;
+        public const byte KEY_BACKSLASH = 0xDC;
+        public const byte KEY_RBRACKET = 0xDD;
 
         #region MouseUpDown
         public static void MouseDown(uint x, uint y)
@@ -208,6 +239,13 @@ namespace PaintDrawer
             RegisterKeyUp(key);
         }
 
+        public static void PressKeyCombo(byte modifier, byte key)
+        {
+            RegisterKeyDown(modifier);
+            PressKey(key);
+            RegisterKeyUp(modifier);
+        }
+
         /// <summary>
         /// Registers the key presses required to write the specified text
         /// </summary>
@@ -215,34 +253,89 @@ namespace PaintDrawer
         /// <param name="slp">The tile to sleep in milliseconds in between key presses</param>
         public static void KeyboardWrite(String text, int slp)
         {
-            bool shiftDown = false;
+            if ((GetKeyState(KEY_CAPITAL) & 0x0001)!=0)
+            {
+                keybd_event(KEY_CAPITAL, 0x45, KEYEVENTF_EXTENDEDKEY | 0, 0);
+            }
 
             for (int i = 0; i < text.Length; i++)
             {
                 char c = text[i];
-                if (Char.IsUpper(c))
+                if(c == '/')
                 {
-                    if (!shiftDown)
-                    {
-                        RegisterKeyDown(KEY_SHIFT);
-                        shiftDown = true;
-                    }
+                    PressKey(KEY_DIVIDE);
+                }
+                else if(c == '\\')
+                {
+                    PressKey(KEY_BACKSLASH);
+                }
+                else if (c == '-')
+                {
+                    PressKey(KEY_MINUS);
+                }
+                else if (c == '_')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_MINUS);
+                    RegisterKeyUp(KEY_SHIFT);
+                }
+                else if (c == '.')
+                {
+                    PressKey(KEY_PERIOD);
+                }
+                else if (c == '(')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_9);
+                    RegisterKeyUp(KEY_SHIFT);
+                }
+                else if (c == ')')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_0);
+                    RegisterKeyUp(KEY_SHIFT);
+                }
+                else if (c == '{')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_LBRACKET);
+                    RegisterKeyUp(KEY_SHIFT);
+                }
+                else if (c == '}')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_RBRACKET);
+                    RegisterKeyUp(KEY_SHIFT);
+                }
+                else if (c == '[')
+                {
+                    PressKey(KEY_LBRACKET);
+                }
+                else if (c == ']')
+                {
+                    PressKey(KEY_RBRACKET);
+                }
+                else if (c == ':')
+                {
+                    RegisterKeyDown(KEY_SHIFT);
+                    PressKey(KEY_SEMICOLON);
+                    RegisterKeyUp(KEY_SHIFT);
                 }
                 else
                 {
-                    if(shiftDown)
+                    if (Char.IsUpper(c))
                     {
-                        RegisterKeyUp(KEY_SHIFT);
-                        shiftDown = false;
+                        PressKeyCombo(KEY_SHIFT, (byte)Char.ToUpper(c));
+                    }
+                    else
+                    {
+                        PressKey((byte)Char.ToUpper(text[i]));
                     }
                 }
-                PressKey((byte)Char.ToUpper(text[i]));
                 Thread.Sleep(slp);
             }
-
-            if (shiftDown)
-                RegisterKeyUp(KEY_SHIFT);
         }
+
 
         /// <summary>
         /// Opens Paint by openin the Windows Start Menu, typing "Paint", waiting and pressing enter.

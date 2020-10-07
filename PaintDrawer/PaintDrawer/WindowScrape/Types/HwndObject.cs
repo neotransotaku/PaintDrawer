@@ -1,4 +1,7 @@
-﻿namespace WindowScrape.Types
+﻿using PaintDrawer;
+using System.Threading;
+
+namespace WindowScrape.Types
 {
     using System;
     using System.Collections.Generic;
@@ -33,6 +36,24 @@
         public bool Minimize()
         {
             return HwndInterface.MinimizeWindow(Hwnd);
+        }
+
+        public void Maximize()
+        {
+            if (this.Location.X > 10 && this.Location.Y > 10 && this.Size.Width < Stuff.ScreenWidth - 50 && this.Size.Height < Stuff.ScreenHeight - 50)
+            {
+                Console.ForegroundColor = Colors.Message;
+                Console.WriteLine("Maximizing window...");
+                Input.MoveTo(new Point(this.Location.X + this.Size.Width - 69, this.Location.Y + 3));
+                Thread.Sleep(100);
+                Input.RegisterClick();
+                Thread.Sleep(100);
+            }
+        }
+
+        public void CloseWindow()
+        {
+            SendMessage(WindowScrape.Constants.WM.CLOSE, 0, 0);
         }
 
         public override bool Equals(object obj)
@@ -96,6 +117,16 @@
             return new HwndObject(HwndInterface.GetHwndParent(this.Hwnd));
         }
 
+        public static HwndObject GetActiveWindow()
+        {
+            return new HwndObject(HwndInterface.ActiveWindow());
+        }
+
+        public static HwndObject GetForegroundWindow()
+        {
+            return new HwndObject(HwndInterface.ForegroundWindow());
+        }
+
         public static HwndObject GetWindowByTitle(string title)
         {
             return new HwndObject(HwndInterface.GetHwndFromTitle(title));
@@ -148,7 +179,7 @@
         {
             Point location = this.Location;
             System.Drawing.Size size = this.Size;
-            return string.Format("({0}) {1},{2}:{3}x{4} \"{5}\"", new object[] { this.Hwnd, location.X, location.Y, size.Width, size.Height, this.Title });
+            return string.Format("({0:x}) {1},{2}:{3}x{4} \"{5}\"", new object[] { this.Hwnd, location.X, location.Y, size.Width, size.Height, this.Title });
         }
 
         public string ClassName

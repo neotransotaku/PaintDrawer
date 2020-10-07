@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using WindowScrape.Types;
+
 
 namespace PaintDrawer
 {
@@ -33,7 +35,7 @@ namespace PaintDrawer
             Console.WriteLine("WinMinor=" + OperatingSystem.Version.Minor);
             Console.WriteLine("Stuff Initiated.");
         }
-        
+
         public static int DistanceSquared(Point a, Point b)
         {
             int dx = a.X - b.X;
@@ -57,6 +59,35 @@ namespace PaintDrawer
         {
             return OperatingSystem.Version.Major == 6 && OperatingSystem.Version.Minor >= 2;
         }
+
+        public static string GetHwndInfoString(HwndObject o)
+        {
+            return String.Format("{0:x}", o.GetHashCode()) + "\t[" + o.ClassName + "]\t" + o.Title;
+        }
+
+        public static void ScanWindows()
+        {
+            foreach (HwndObject o in HwndObject.GetWindows())
+            {
+                Console.WriteLine(GetHwndInfoString(o));
+            }
+        }
+
+        public static void WriteConsoleMessage(string message)
+        {
+            Console.ForegroundColor = Colors.Message;
+            Console.WriteLine(message);
+        }
+        public static void WriteConsoleError(string message)
+        {
+            Console.ForegroundColor = Colors.Error;
+            Console.WriteLine(message);
+        }
+        public static void WriteConsoleSuccess(string message)
+        {
+            Console.ForegroundColor = Colors.Success;
+            Console.WriteLine(message);
+        }
     }
 
     static class Colors
@@ -65,6 +96,5 @@ namespace PaintDrawer
         public const ConsoleColor Success = ConsoleColor.Green;
         public const ConsoleColor Message = ConsoleColor.Yellow;
         public const ConsoleColor Normal = ConsoleColor.Gray;
-        
     }
 }

@@ -2,6 +2,7 @@
 using PaintDrawer.Letters;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Threading;
 using WindowScrape.Types;
 using System.Windows.Input;
@@ -18,6 +19,7 @@ namespace PaintDrawer
         public static double LastDraw = 0;
         public static CharFont font;
         public static Queue<IAction> queue;
+        private static string Basepath = "D:\\Cygwin\\home\\mle\\2020_Q4_Fall\\PCC149\\DailyReport";
 
         // Windows comlains if this isnt decorated with a STAThread
         [STAThread]
@@ -32,7 +34,7 @@ namespace PaintDrawer
             Console.ForegroundColor = Colors.Success;
             Console.WriteLine("Welcome to Paint Drawer V0.1!");
             //The drawing and stuff is in another thread
-            Thread t = new Thread(ProcessStuff);
+            Thread t = new Thread(Soreni);
             t.Start();
 
             // The most cancer way to kill the program; literally kill it from another thread.
@@ -63,6 +65,61 @@ namespace PaintDrawer
                     Console.WriteLine("Program abort canceled.");
                 }
                 Thread.Sleep(10);
+            }
+        }
+
+        static void Soreni()
+        {
+            DateTime now = DateTime.Now;
+            string today = String.Format("{0}-{1:00}-{2:00}", now.Year, now.Month, now.Day);
+            if(!Directory.Exists(Basepath + "\\" + today))
+            {
+                Basepath = Basepath + "\\" + today;
+                Directory.CreateDirectory(Basepath + "\\" + today);
+            } else
+            {
+                Basepath = Basepath + "\\" + today;
+            }
+
+            string timestamp = String.Format("{0}{1:00}{2:00}_{3:00}{4:00}", now.Year, now.Month, now.Day, now.Hour, now.Minute);
+            AxiUmPuppet axiUm = AxiUmPuppet.GetInstance();
+
+            List<Tuple<string, string>> ranges = new List<Tuple<string, string>>();
+            ranges.Add(Tuple.Create("S2100", "S2299"));
+            ranges.Add(Tuple.Create("I2100", "I2299"));
+            axiUm.RunAppointmentReport(Basepath + "\\appointment-" + timestamp, "07/01/2020", "06/30/2021", ranges);
+            axiUm.RunChairReport(Basepath + "\\chair-" + timestamp, "07/01/2020", "06/30/2021", ranges);
+            axiUm.RunChargeReport(Basepath + "\\charge-" + timestamp, "07/01/2019", String.Format("{1:00}/{2:00}/{0}", now.Year, now.Month, now.Day), ranges);
+            axiUm.RunFeedbackReport(Basepath + "\\feedback-"+timestamp, "07/01/2019", String.Format("{1:00}/{2:00}/{0}", now.Year, now.Month, now.Day), ranges);
+            foreach(string practice in new string[] { "5", "6", "9" })
+            {
+                axiUm.RunInProcessReport(Basepath + "\\inprocess["+practice+"]-" + timestamp, "07/01/2019", String.Format("{1:00}/{2:00}/{0}", now.Year, now.Month, now.Day), ranges, practice);
+            }
+            Thread.Sleep(500);
+
+            Console.ForegroundColor = Colors.Message;
+            Console.WriteLine("Task is done");
+
+            ShowSelf();
+            Input.RegisterKeyDown(Input.KEY_A);
+            Input.RegisterKeyDown(Input.KEY_S);
+            Input.RegisterKeyDown(Input.KEY_D);
+
+            return;
+        }
+
+        static void ShowSelf()
+        {
+            List<HwndObject> list = HwndObject.GetWindows();
+            foreach (HwndObject o in list)
+            {
+                if (o.Size.Width == 0 || o.Size.Height == 0 || o.Text.Length == 0)
+                    continue;
+
+                if (o.ClassName.Equals("ConsoleWindowClass") || o.Title.Contains("PaintDrawer.exe"))
+                {
+                    WindowScrape.Static.HwndInterface.ShowWindow(o.Hwnd, 3);
+                }
             }
         }
 
@@ -118,15 +175,15 @@ namespace PaintDrawer
             Console.WriteLine("Stopwatch started. Entering main loop...");
 
             Input.PaintSelectBrush();
-            //new SimpleWrite(font, "Welcome to PaintDrawer! What shall I draw for you, kind sir?", 70).Act();
+            new SimpleWrite(font, "Welcome to PaintDrawer! What shall I draw for you, kind sir?", 70).Act();
 
-            //System.Text.StringBuilder build = new System.Text.StringBuilder(256);
-            //for (int i = 32; i < CharFont.MaxCharNumericValue; i++)
-            //    if (font.DoesCharExist((char)i))
-            //        build.Append((char)i);
-            //new SimpleWrite(font, build.ToString(), 70).Act();
+            System.Text.StringBuilder build = new System.Text.StringBuilder(256);
+            for (int i = 32; i < CharFont.MaxCharNumericValue; i++)
+                if (font.DoesCharExist((char)i))
+                    build.Append((char)i);
+            new SimpleWrite(font, build.ToString(), 70).Act();
 
-            //Actions.Actions.CreateSimpleWrite(font, "Este es un mensaje especial! Estas durmiendo en un estado de coma, metimos esto en tu cabeza pero no sabemos a donde va a terminar, no tenemos idea que hacer con vos, por favor despertate! no porque te extrañemos pero yo que se...").Act();
+            Actions.Actions.CreateSimpleWrite(font, "Este es un mensaje especial! Estas durmiendo en un estado de coma, metimos esto en tu cabeza pero no sabemos a donde va a terminar, no tenemos idea que hacer con vos, por favor despertate! no porque te extrañemos pero yo que se...").Act();
             LastDraw = -60;
 
             while (true)

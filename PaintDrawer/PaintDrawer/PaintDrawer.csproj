@@ -82,6 +82,7 @@
     <Compile Include="Actions\DrawUndistortedChar.cs" />
     <Compile Include="Actions\SimpleWrite.cs" />
     <Compile Include="Actions\WriteRemoveWrite.cs" />
+    <Compile Include="AxiUmPuppet.cs" />
     <Compile Include="GMail\Account.cs" />
     <Compile Include="GMail\RecievedMail.cs" />
     <Compile Include="Input.cs" />
@@ -91,6 +92,7 @@
     <Compile Include="Letters\Vec2.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RetryableAction.cs" />
     <Compile Include="Stuff.cs" />
     <Compile Include="WindowScrape\Constants\PositioningFlags.cs" />
     <Compile Include="WindowScrape\Constants\WM.cs" />

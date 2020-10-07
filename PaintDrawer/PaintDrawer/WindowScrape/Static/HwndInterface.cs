@@ -165,6 +165,20 @@
             return (int) SendMessage(hwnd, (uint) msg, param1, param2);
         }
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetActiveWindow();
+        public static IntPtr ActiveWindow()
+        {
+            return GetActiveWindow();
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetForegroundWindow();
+        public static IntPtr ForegroundWindow()
+        {
+            return GetForegroundWindow();
+        }
+
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
